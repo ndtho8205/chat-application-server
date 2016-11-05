@@ -1,4 +1,4 @@
-package messages;
+package server.messages;
 
 import javax.json.JsonException;
 import javax.json.JsonObject;
@@ -39,6 +39,7 @@ public class Message {
     public void setJsonObject(JsonObject jsonObject) {
         this.jsonObject = jsonObject;
     }
+
     @Override
     public String toString() {
         return jsonObject.toString();

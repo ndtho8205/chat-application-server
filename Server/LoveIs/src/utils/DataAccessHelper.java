@@ -1,4 +1,4 @@
-package utils;
+package server.utils;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -8,11 +8,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DataAccessHelper {
+
     private static final Logger LOGGER = Logger.getLogger(DataAccessHelper.class.getName());
     private final String DB_NAME = "LoveIsSchema";
-    private final String URL = "jdbc:mysql://localhost:3306/" + DB_NAME;
-    private final String USERNAME = "root";
-    private final String PASSWORD = "root";
+
     private Connection connection = null;
     private Statement statement = null;
 
@@ -20,17 +19,20 @@ public class DataAccessHelper {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "JDBC: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "JDBC DRIVER ERROR: {0}", e.getMessage());
         }
     }
 
     public boolean open() {
         try {
+            String URL = "jdbc:mysql://localhost:3306/" + DB_NAME + "?autoReconnect=true&useSSL=false";
+            String USERNAME = "root";
+            String PASSWORD = "root";
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             statement = connection.createStatement();
             return true;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Open database: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "DATABASE CONNECTION ERROR: {0}", e.getMessage());
             return false;
         }
     }
@@ -40,7 +42,7 @@ public class DataAccessHelper {
             if (connection != null) connection.close();
             if (statement != null) statement.close();
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Close database: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "DATABASE DISCONNECTION ERROR: {0}", e.getMessage());
         }
 
     }
@@ -54,7 +56,7 @@ public class DataAccessHelper {
             if (rs.next())
                 return rs.getString(field);
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "GetValue: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "GET VALUE FROM DATABASE ERROR: {0}", e.getMessage());
         } finally {
             if (rs != null) try {
                 rs.close();
@@ -75,7 +77,7 @@ public class DataAccessHelper {
             crs = new CachedRowSetImpl();
             crs.populate(rs);
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Select: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "SELECT QUERY FROM DATABASE ERROR: {0}", e.getMessage());
         } finally {
             if (rs != null) try {
                 rs.close();
@@ -87,18 +89,18 @@ public class DataAccessHelper {
         return crs;
     }
 
-    private void delete(String tablename, String where) {
-        String sql = "delete from " + DB_NAME + "." + tablename + " where " + where;
-        try {
-            if (statement.executeUpdate(sql) > 0) {
-                System.out.println(" delete xong");
-            } else {
-                System.out.println("khong co " + where + " can delete");
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Delete: ", e.getMessage());
-        }
-    }
+//    private void delete(String tablename, String where) {
+//        String sql = "delete from " + DB_NAME + "." + tablename + " where " + where;
+//        try {
+//            if (statement.executeUpdate(sql) > 0) {
+//                System.out.println(" delete xong");
+//            } else {
+//                System.out.println("khong co " + where + " can delete");
+//            }
+//        } catch (SQLException e) {
+//            LOGGER.log(Level.WARNING, "DELETE: ", e.getMessage());
+//        }
+//    }
 
     public boolean insertUser(String name, String password) {
         //TODO: `users` table just have 2 columns: `username`, `password`
@@ -112,14 +114,14 @@ public class DataAccessHelper {
             if (pst.executeUpdate() > 0)
                 return true;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "GetValue: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "INSERT USER TO DATABASE ERROR: ", e.getMessage());
         } finally {
             close();
         }
         return false;
     }
 
-    public boolean insertMessage(int fromid,  int toid,  String type, java.util.Date time, String text) {
+    public boolean insertMessage(int fromid, int toid, String type, java.util.Date time, String text) {
         String sql = "INSERT INTO " + DB_NAME + ".`message` (`from_id`, `to_id`, `type`, `time`, `text`) VALUES (?, ?, ?, ?, ?);";
         PreparedStatement pst = null;
         try {
@@ -133,7 +135,7 @@ public class DataAccessHelper {
             if (pst.executeUpdate() > 0)
                 return true;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "GetValue: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "INSERT MESSAGE TO DATABASE ERROR: ", e.getMessage());
         } finally {
             close();
         }

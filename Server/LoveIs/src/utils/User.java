@@ -1,7 +1,10 @@
-package utils;
+package server.utils;
 
-import messages.Message;
-import messages.TextMsg;
+import server.LoveIsServer;
+import server.messages.FileMsg;
+import server.messages.Message;
+import server.messages.TextMsg;
+import server.messages.UserUpdate;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -14,10 +17,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class User {
+
     private static DataAccessHelper dataAccessHelper = new DataAccessHelper();
+
+    public final Session session;
     private final String username;
     private final int userid;
-    public final Session session;
+
     private Map<String, User> friendsList = new HashMap<>();
 
     public User(String username, int userid, Session session, ConcurrentHashMap<String, User> sessionMap) {
@@ -35,9 +41,16 @@ public class User {
         return username;
     }
 
-    public void onlineState(String friendname, User friendUser, Boolean online) {
-        friendsList.put(friendname, friendUser);
-        //friendUser.session.getBasicRemote().sendObject();
+    public void handleOnlineState(boolean state) {
+        friendsList.entrySet().stream().filter(entry -> entry.getValue() != null).forEach(entry -> entry.getValue().handleOnlineState(this, state));
+    }
+
+    public void handleOnlineState(User friend, boolean state) {
+        if (state)
+            friendsList.put(friend.getUsername(), friend);
+        else
+            friendsList.put(friend.getUsername(), null);
+        LoveIsServer.sendMessage(this.session, UserUpdate.updateOnlineState(friend.getUsername(), state));
     }
 
     private void initFriendsList(ConcurrentHashMap<String, User> sessionMap) {
@@ -51,7 +64,7 @@ public class User {
                         "users", "id = '" + data.getString((Integer.parseInt(data.getString(1)) == userid) ? 2 : 1) + "';");
                 User friend = (sessionMap.containsKey(friendname)) ? sessionMap.get(friendname) : null;
                 if (friend != null)
-                    friend.onlineState(username, this, true);
+                    friend.handleOnlineState(this, true);
                 friendsList.put(friendname, friend);
 
             }
@@ -67,7 +80,7 @@ public class User {
                         Json.createObjectBuilder()
                                 .add("friendname", x)
                                 .add("online", friendsList.get(x) != null)
-                        .build()
+                                .build()
                 )
         );
         JsonObject jsonObject = Json.createObjectBuilder()
@@ -79,11 +92,7 @@ public class User {
         return new Message(Message.USER_RES, jsonObject);
     }
 
-    public void handleLogoutReq() {
-
-    }
-
-    public Message handleChat(User toUser, TextMsg textMsg) {
+    public Message handleChat(TextMsg textMsg) {
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add("type", Message.SEND_TEXT)
                 .add("time", textMsg.getTimeString())
@@ -91,9 +100,27 @@ public class User {
                 .add("fromFriend", username)
                 .add("text", textMsg.getText())
                 .build();
-        System.out.println(toUser.getUsername());
-        System.out.println(jsonObject.toString());
         return new Message(Message.SEND_TEXT, jsonObject);
     }
 
+    public Message handleTransferFile(FileMsg fileMsg) {
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("type", Message.SEND_FILE)
+                .add("fileName", fileMsg.getFileName())
+                .add("fileSize", fileMsg.getFileSize())
+                .add("fromFriend", username)
+                .build();
+        return new Message(Message.SEND_FILE, jsonObject);
+    }
+
+    public Message handleAllowTransferFile(FileMsg fileMsg) {
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("type", Message.SEND_FILE)
+                .add("fileName", fileMsg.getFileName())
+                .add("fileSize", fileMsg.getFileSize())
+                .add("toFriend", username)
+                .add("status", fileMsg.getStatus())
+                .build();
+        return new Message(Message.SEND_FILE, jsonObject);
+    }
 }

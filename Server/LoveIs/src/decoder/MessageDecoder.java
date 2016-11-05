@@ -1,10 +1,9 @@
-package decoder;
+package server.decoder;
 
-
-import messages.FileMsg;
-import messages.Message;
-import messages.TextMsg;
-import messages.UserMsg;
+import server.messages.FileMsg;
+import server.messages.Message;
+import server.messages.TextMsg;
+import server.messages.UserMsg;
 
 import javax.json.Json;
 import javax.json.JsonException;
@@ -16,18 +15,17 @@ import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MessageDecoder implements Decoder.Text<Message>{
+public class MessageDecoder implements Decoder.Text<Message> {
 
     private static final Logger LOGGER = Logger.getLogger(MessageDecoder.class.getName());
 
     @Override
     public Message decode(String s) throws DecodeException {
-        LOGGER.log(Level.INFO, "Decoding: {0}", s);
         try {
             JsonObject jsonObject = Json.createReader(new StringReader(s)).readObject();
             Message msg = null;
 
-            switch(jsonObject.getString("type")) {
+            switch (jsonObject.getString("type")) {
                 case Message.USER_REGISTRATION_REQ:
                 case Message.USER_LOGIN_REQ:
                     msg = new UserMsg(jsonObject);
@@ -42,7 +40,7 @@ public class MessageDecoder implements Decoder.Text<Message>{
 
             return msg;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error: ", e.getMessage());
+            LOGGER.log(Level.WARNING, "DECODE ERROR: {0}", e.getMessage());
             return null;
         }
     }
@@ -53,7 +51,7 @@ public class MessageDecoder implements Decoder.Text<Message>{
             Json.createReader(new StringReader(s)).readObject();
             return true;
         } catch (JsonException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
+            LOGGER.log(Level.WARNING, "DECODE ERROR: {0}", e.getMessage());
             return false;
         }
     }

@@ -1,7 +1,6 @@
-package encoder;
+package server.encoder;
 
-import messages.Message;
-
+import server.messages.Message;
 import javax.websocket.EncodeException;
 import javax.websocket.Encoder;
 import javax.websocket.EndpointConfig;

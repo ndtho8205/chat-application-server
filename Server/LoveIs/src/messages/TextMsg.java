@@ -1,6 +1,6 @@
-package messages;
+package server.messages;
 
-import utils.DataAccessHelper;
+import server.utils.DataAccessHelper;
 
 import javax.json.JsonObject;
 import java.text.ParseException;
@@ -15,7 +15,7 @@ public class TextMsg extends Message {
     private String text;
 
     public TextMsg(JsonObject jsonObject) {
-        super(Message.SEND_TEXT, jsonObject);
+        super(SEND_TEXT, jsonObject);
         this.toUser = jsonObject.getString("toFriend");
         this.messType = jsonObject.getString("messType");
         try {
@@ -42,7 +42,11 @@ public class TextMsg extends Message {
     }
 
     public boolean saveDatabase(int fromid, int toid) {
-        return dataAccessHelper.insertMessage(fromid, toid, messType, getDateTime(), text);
+        if (toid == -1) {
+            String id = dataAccessHelper.getValue("id", "users", "username = '" + toUser + "';");
+            toid = (id == null) ? -1 : Integer.parseInt(id);
+        }
+        return (toid != -1) && dataAccessHelper.insertMessage(fromid, toid, messType, getDateTime(), text);
     }
 
 

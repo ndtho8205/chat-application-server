@@ -1,7 +1,7 @@
-package messages;
+package server.messages;
 
-import utils.DataAccessHelper;
-import utils.ErrorCode;
+import server.utils.DataAccessHelper;
+import server.utils.ErrorCode;
 
 import javax.json.JsonObject;
 
@@ -15,7 +15,7 @@ public class UserMsg extends Message {
         super(jsonObject.getString("type"), jsonObject);
         username = jsonObject.getString("username");
         password = jsonObject.getString("password");
-        if (this.type.equals(Message.USER_REGISTRATION_REQ))
+        if (this.type.equals(USER_REGISTRATION_REQ))
             saveDatabase();
         this.id = readId();
     }
@@ -32,8 +32,8 @@ public class UserMsg extends Message {
     }
 
     public ErrorMsg validate() {
-        return (id == -1)? new ErrorMsg(
-                (type.equals(Message.USER_REGISTRATION_REQ)) ? ErrorCode.REGISTRATION_FAILED : ErrorCode.VALIDATION_FAILED
+        return (id == -1) ? new ErrorMsg(
+                (type.equals(USER_REGISTRATION_REQ)) ? ErrorCode.REGISTRATION_FAILED : ErrorCode.VALIDATION_FAILED
         ) : null;
     }
 

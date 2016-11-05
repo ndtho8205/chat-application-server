@@ -1,11 +1,26 @@
-package messages;
+package server.messages;
 
 import javax.json.Json;
-import javax.json.JsonObject;
 
 public class UserUpdate {
-    private String messageType = Message.USER_UPDATE;
+    private static String messageType = Message.USER_UPDATE;
 
-    //public static Message updateStatus()
+    public static Message updateOnlineState(String friendName, boolean state) {
+        return new Message(messageType, Json.createObjectBuilder()
+                .add("type", messageType)
+                .add("friendname", friendName)
+                .add("online", state)
+                .build()
+        );
+    }
+
+    public static Message updateStatus(String friendName, String status) {
+        return new Message(messageType, Json.createObjectBuilder()
+                .add("type", messageType)
+                .add("friendname", friendName)
+                .add("status", status)
+                .build()
+        );
+    }
 
 }
