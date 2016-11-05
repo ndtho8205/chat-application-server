@@ -1,2 +1,3 @@
 # chat-application-server
-Server chat, file transfer by using WebSocket programming in Java
+
+A simple chat application developed in Java as a socket programming assignment for Computer Networks course at HCMUT.
