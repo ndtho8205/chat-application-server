@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div>
+    <button type="button" onclick="openSocket();">Open</button>
+    <button type="button" onclick="closeSocket();">Close</button>
+</div>
+
+<div>
+    <input type="text" id="messageinput"/>
+    <button type="button" onclick="send();">Send</button>
+    <input type="file" id="filename" />
+    <input type="button" value="Upload" onclick="sendFile()" />
+</div>
+
+<div id="messages"></div>
+
+<script type="text/javascript" src="script.js"></script>
+</body>
+</html>
